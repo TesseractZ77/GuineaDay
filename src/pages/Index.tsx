@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HandTracker from '@/components/HandTracker';
-import GuineaPigSlider from '@/components/GuineaPigSlider';
+import FlyingGuineaPigGame from '@/components/FlyingGuineaPigGame';
 import { Button } from '@/components/ui/button';
 import { Camera, Mouse } from 'lucide-react';
 
@@ -49,7 +49,7 @@ const Index = () => {
             transition={{ delay: 0.4 }}
             className="text-4xl md:text-5xl font-display font-bold text-foreground mb-4"
           >
-            荷兰猪乐园
+            GuineaDay
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -57,7 +57,7 @@ const Index = () => {
             transition={{ delay: 0.6 }}
             className="text-lg text-muted-foreground mb-8"
           >
-            欢迎来到最可爱的荷兰猪世界！
+            Welcome to the cutest guinea pig paradise!
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -71,7 +71,7 @@ const Index = () => {
               }}
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 text-lg rounded-2xl shadow-float hover:shadow-glow transition-all"
             >
-              再玩一次 🎉
+              Play Again 🎉
             </Button>
           </motion.div>
         </div>
@@ -129,7 +129,7 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              荷兰猪乐园
+              GuineaDay
             </motion.h1>
             <motion.p
               className="text-lg md:text-xl text-muted-foreground mb-12"
@@ -137,7 +137,7 @@ const Index = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              选择你的互动方式
+              Choose your interaction mode
             </motion.p>
 
             <motion.div
@@ -157,10 +157,10 @@ const Index = () => {
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-lg text-foreground mb-1">
-                    手势互动
+                    Hand Gesture
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    用手隔空抓取荷兰猪
+                    Grab guinea pigs with your hand
                   </p>
                 </div>
               </motion.button>
@@ -176,10 +176,10 @@ const Index = () => {
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-lg text-foreground mb-1">
-                    鼠标/触屏
+                    Mouse / Touch
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    点击拖动荷兰猪
+                    Click and drag guinea pigs
                   </p>
                 </div>
               </motion.button>
@@ -187,30 +187,29 @@ const Index = () => {
           </motion.div>
         ) : (
           <motion.div
-            key="slider"
+            key="game"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-4xl z-10"
+            className="w-full max-w-5xl z-10"
           >
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-center mb-8 md:mb-12"
+              className="text-center mb-6 md:mb-8"
             >
               <h1 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-2">
-                抓住你的荷兰猪！
+                Feed the Guinea Pigs!
               </h1>
               <p className="text-muted-foreground">
                 {useHandTracking 
-                  ? '将手伸到摄像头前，抓住任意一只往右拖'
-                  : '点击任意一只荷兰猪往右拖动'
-                }
+                  ? 'Grab any flying guinea pig and drop it on the food'
+                  : 'Click and drag any guinea pig to the food'}
               </p>
             </motion.div>
 
-            <GuineaPigSlider
+            <FlyingGuineaPigGame
               onComplete={handleComplete}
               handPosition={handPosition}
               useHandTracking={useHandTracking}
@@ -220,13 +219,13 @@ const Index = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="mt-8 text-center"
+              className="mt-6 text-center"
             >
               <button
                 onClick={() => setShowModeSelection(true)}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
               >
-                切换互动模式
+                Switch interaction mode
               </button>
             </motion.div>
           </motion.div>
