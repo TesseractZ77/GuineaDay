@@ -1,73 +1,83 @@
-# Welcome to your Lovable project
+# 🐹 GuineaDay
 
-## Project info
+**GuineaDay** is a cozy, wholesome web application designed to bring joy to your daily routine. Combining a productivity task manager with an interactive guinea pig game, it's the perfect way to stay organized while getting your daily dose of cuteness.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![GuineaDay Banner](src/assets/hachi.png) <!-- You can replace this with a screenshot later -->
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+### 🎮 Flying Guinea Pig Game
+Feed your favorite guinea pigs and watch them fly!
+- **Meet the Team**: Hachi, Kui, Nova, Elmo, Mel, Haru, and **Seven**!
+- **Two Ways to Play**:
+  - **Hand Gestures**: Uses your webcam and AI (MediaPipe) to track your hand. Close your hand (✊) to grab a pig and drop it on the food!
+  - **Mouse/Touch**: Simply click and drag to play.
+- **Dynamic Physics**: Watch them bounce around the screen.
 
-**Use Lovable**
+### 📋 Daily Task Manager
+Keep track of your pet care routines or personal to-dos.
+- **Add & Organize**: Create tasks with categories (Feeding 🥦, Cleaning 🧹, Grooming ✂️, etc.).
+- **Track Progress**: Mark tasks as done and keep your day productive.
+- **Simple UI**: Clean, distraction-free interface.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 🌤️ Smart Dashboard
+- **Date & Weather**: Live weather updates for your location (powered by Open-Meteo).
+- **Navigation**: Easy access to the Game, Tasks, and Photo Gallery.
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Tech Stack
 
-**Use your preferred IDE**
+- **Frontend**: React, TypeScript, Vite
+- **Styling**: Tailwind CSS, Framer Motion (for animations)
+- **Backend**: Python (FastAPI)
+- **Database**: SQLite (via SQLAlchemy)
+- **AI/Computer Vision**: MediaPipe Hands
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🚀 Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Follow these instructions to set up the project locally. You will need to run both the **Backend** and **Frontend** terminals.
 
-Follow these steps:
+### Prerequisites
+- Node.js (v16+)
+- Python (v3.10+)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 1️⃣ Backend Setup (Python)
+The backend handles task data storage.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+cd backend
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Create a virtual environment
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Install dependencies
+pip install fastapi uvicorn sqlalchemy pydantic requests
+
+# Start the server
+uvicorn main:app --reload --port 8000
+```
+
+### 2️⃣ Frontend Setup (React)
+The frontend runs the game and UI.
+
+Open a **new terminal**:
+```bash
+cd guinea-pig-gateway # (If not already in root)
+
+# Install dependencies
+npm install
+
+# Start the dev server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open your browser and navigate to the link shown (usually `http://localhost:8080`).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📸 Screenshots
+*(Add screenshots of your game and task manager here!)*
 
-**Use GitHub Codespaces**
+## 📄 License
+This project is for educational and personal use.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+*Made with ❤️, 🥕, and lots of 🥬*
