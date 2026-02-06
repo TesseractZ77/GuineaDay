@@ -1,15 +1,63 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HandTracker from '@/components/HandTracker';
 import FlyingGuineaPigGame from '@/components/FlyingGuineaPigGame';
 import { Button } from '@/components/ui/button';
-import { Camera, Mouse } from 'lucide-react';
+import { Camera, Mouse, CloudSun, Calendar } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const Index = () => {
+  const location = useLocation();
   const [useHandTracking, setUseHandTracking] = useState(false);
   const [handPosition, setHandPosition] = useState<{ x: number; y: number; isGrabbing: boolean } | null>(null);
   const [hasEntered, setHasEntered] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.fromTasks) {
+      setHasEntered(true);
+    }
+  }, [location]);
   const [showModeSelection, setShowModeSelection] = useState(true);
+
+  // Weather state
+  const [weather, setWeather] = useState<{ temp: number; code: number } | null>(null);
+  const [currentDate, setCurrentDate] = useState<string>('');
+
+  useEffect(() => {
+    // Set date
+    const date = new Date();
+    setCurrentDate(new Intl.DateTimeFormat('en-AU', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
+    }).format(date));
+
+    // Fetch weather (Melbourne coordinates default)
+    const fetchWeather = async () => {
+      try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.8136&longitude=144.9631&current_weather=true');
+        const data = await res.json();
+        setWeather({
+          temp: Math.round(data.current_weather.temperature),
+          code: data.current_weather.weathercode
+        });
+      } catch (e) {
+        console.error("Failed to fetch weather", e);
+      }
+    };
+    fetchWeather();
+  }, []);
+
+  const getWeatherEmoji = (code: number) => {
+    if (code === 0) return '☀️';
+    if (code >= 1 && code <= 3) return '⛅';
+    if (code >= 45 && code <= 48) return '🌫️';
+    if (code >= 51 && code <= 67) return '🌧️';
+    if (code >= 71 && code <= 77) return '❄️';
+    if (code >= 80 && code <= 82) return '🌦️';
+    if (code >= 95) return '⚡';
+    return '🌡️';
+  };
 
   const handleHandMove = useCallback((position: { x: number; y: number; isGrabbing: boolean } | null) => {
     setHandPosition(position);
@@ -32,8 +80,26 @@ const Index = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="min-h-screen gradient-warm flex items-center justify-center p-8"
+        className="min-h-screen gradient-warm flex items-center justify-center p-8 relative"
       >
+        {/* Date and Weather Widget */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-6 left-6 md:top-8 md:left-8 z-20 flex flex-col gap-2 pointer-events-none"
+        >
+          <div className="glass-card px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-white/20">
+            <Calendar className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-foreground/80">{currentDate}</span>
+          </div>
+          {weather && (
+            <div className="glass-card px-4 py-2 rounded-full flex items-center gap-2 shadow-sm border border-white/20 w-fit">
+              <span className="text-lg">{getWeatherEmoji(weather.code)}</span>
+              <span className="text-sm font-medium text-foreground/80">{weather.temp}°C</span>
+            </div>
+          )}
+        </motion.div>
+
         <div className="text-center max-w-2xl mx-auto">
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
@@ -74,13 +140,35 @@ const Index = () => {
               Play Again 🎉
             </Button>
           </motion.div>
-        </div>
-      </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="mt-6 flex flex-col gap-4 items-center"
+          >
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/tasks'}
+              className="px-6 py-4 rounded-xl border-2 hover:bg-accent/10"
+            >
+              📋 Daily Tasks
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/gallery'}
+              className="px-6 py-4 rounded-xl border-2 hover:bg-accent/10"
+            >
+              📷 Photo Gallery
+            </Button>
+          </motion.div>
+        </div >
+      </motion.div >
     );
   }
 
   return (
-    <div className="min-h-screen gradient-sunset flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
+    <div className="min-h-screen gradient-sunset flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden relative">
       {/* Background decorations */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <motion.div
@@ -203,7 +291,7 @@ const Index = () => {
                 Feed the Guinea Pigs!
               </h1>
               <p className="text-muted-foreground">
-                {useHandTracking 
+                {useHandTracking
                   ? 'Grab any flying guinea pig and drop it on the food'
                   : 'Click and drag any guinea pig to the food'}
               </p>
@@ -232,7 +320,7 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* Hand tracker camera view */}
+      {/* Hand tracker using webcam but not showing feed */}
       <HandTracker
         onHandMove={handleHandMove}
         enabled={useHandTracking && !showModeSelection}

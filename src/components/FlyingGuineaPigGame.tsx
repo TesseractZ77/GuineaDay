@@ -2,16 +2,17 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Import all guinea pig images
-import guineaPig1 from '@/assets/guinea-pig-1.png';
-import guineaPig2 from '@/assets/guinea-pig-2.png';
-import guineaPig3 from '@/assets/guinea-pig-3.png';
-import guineaPig4 from '@/assets/guinea-pig-4.png';
-import guineaPig5 from '@/assets/guinea-pig-5.png';
-import guineaPig6 from '@/assets/guinea-pig-6.png';
+import guineaPig1 from '@/assets/hachi.png';
+import guineaPig2 from '@/assets/kui.png';
+import guineaPig3 from '@/assets/nova.png';
+import guineaPig4 from '@/assets/elmo.png';
+import guineaPig5 from '@/assets/mel.png';
+import guineaPig6 from '@/assets/haru.png';
+import guineaPig7 from '@/assets/seven.png';
 
-const guineaPigImages = [guineaPig1, guineaPig2, guineaPig3, guineaPig4, guineaPig5, guineaPig6];
+const guineaPigImages = [guineaPig1, guineaPig2, guineaPig3, guineaPig4, guineaPig5, guineaPig6, guineaPig7];
 
-const names = ['Patches', 'Sunny', 'Smokey', 'Cream', 'Coco', 'Snowball'];
+const names = ['hachi', 'kui', 'nova', 'elmo', 'mel', 'haru', 'seven'];
 
 const fruits = [
   { emoji: '🥕', name: 'Carrot' },
@@ -19,9 +20,8 @@ const fruits = [
   { emoji: '🍎', name: 'Apple' },
   { emoji: '🍓', name: 'Strawberry' },
   { emoji: '🥒', name: 'Cucumber' },
-  { emoji: '🌽', name: 'Corn' },
   { emoji: '🍇', name: 'Grapes' },
-  { emoji: '🍌', name: 'Banana' },
+  { emoji: '🍉', name: 'Watermelon' }
 ];
 
 interface GuineaPig {
@@ -52,7 +52,7 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const lastHandGrabRef = useRef(false);
-  
+
   const [guineaPigs, setGuineaPigs] = useState<GuineaPig[]>([]);
   const [fruitPositions, setFruitPositions] = useState<FruitPosition[]>([]);
   const [selectedPig, setSelectedPig] = useState<number | null>(null);
@@ -64,10 +64,10 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   // Initialize positions
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     const rect = containerRef.current.getBoundingClientRect();
     const padding = 100;
-    
+
     // Initialize guinea pigs at random positions with random velocities
     const pigs: GuineaPig[] = guineaPigImages.map((image, index) => ({
       id: index,
@@ -79,9 +79,9 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
       name: names[index],
     }));
     setGuineaPigs(pigs);
-    
+
     // Initialize fruit positions around the edges
-    const fruitCount = 6;
+    const fruitCount = fruits.length;
     const fruitPos: FruitPosition[] = [];
     for (let i = 0; i < fruitCount; i++) {
       const fruit = fruits[i % fruits.length];
@@ -99,20 +99,20 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   // Animate guinea pigs flying around
   useEffect(() => {
     if (!containerRef.current || guineaPigs.length === 0) return;
-    
+
     const animate = () => {
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      
+
       setGuineaPigs(prev => prev.map(pig => {
         if (pig.id === selectedPig) return pig; // Don't move selected pig
-        
+
         let { x, y, vx, vy } = pig;
-        
+
         // Update position
         x += vx;
         y += vy;
-        
+
         // Bounce off walls
         const pigSize = 80;
         if (x < 0 || x > rect.width - pigSize) {
@@ -123,11 +123,11 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
           vy = -vy * 0.9;
           y = Math.max(0, Math.min(rect.height - pigSize, y));
         }
-        
+
         // Add slight random movement
         vx += (Math.random() - 0.5) * 0.2;
         vy += (Math.random() - 0.5) * 0.2;
-        
+
         // Limit velocity
         const maxSpeed = 4;
         const speed = Math.sqrt(vx * vx + vy * vy);
@@ -135,13 +135,13 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
           vx = (vx / speed) * maxSpeed;
           vy = (vy / speed) * maxSpeed;
         }
-        
+
         return { ...pig, x, y, vx, vy };
       }));
-      
+
       animationRef.current = requestAnimationFrame(animate);
     };
-    
+
     animationRef.current = requestAnimationFrame(animate);
     return () => {
       if (animationRef.current) {
@@ -153,14 +153,14 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   // Check if pig is near any fruit
   const checkFruitCollision = useCallback((pigX: number, pigY: number) => {
     const pigSize = 80;
-    const fruitSize = 60;
-    const threshold = 60;
-    
+    const fruitSize = 50;
+    const threshold = 50;
+
     for (const fruit of fruitPositions) {
       const dx = (pigX + pigSize / 2) - (fruit.x + fruitSize / 2);
       const dy = (pigY + pigSize / 2) - (fruit.y + fruitSize / 2);
       const distance = Math.sqrt(dx * dx + dy * dy);
-      
+
       if (distance < threshold) {
         return fruit;
       }
@@ -171,11 +171,11 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   // Handle hand tracking
   useEffect(() => {
     if (!useHandTracking || !handPosition || !containerRef.current) return;
-    
+
     const rect = containerRef.current.getBoundingClientRect();
     const localX = handPosition.x - rect.left;
     const localY = handPosition.y - rect.top;
-    
+
     // Detect grab start
     if (handPosition.isGrabbing && !lastHandGrabRef.current) {
       // Find pig under hand
@@ -191,19 +191,19 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
         }
       }
     }
-    
+
     // Handle dragging
     if (selectedPig !== null && handPosition.isGrabbing) {
       const newX = localX - dragOffset.x;
       const newY = localY - dragOffset.y;
       setDragPosition({ x: newX, y: newY });
-      
+
       // Update pig position
-      setGuineaPigs(prev => prev.map(pig => 
+      setGuineaPigs(prev => prev.map(pig =>
         pig.id === selectedPig ? { ...pig, x: newX, y: newY, vx: 0, vy: 0 } : pig
       ));
     }
-    
+
     // Detect release
     if (!handPosition.isGrabbing && lastHandGrabRef.current && selectedPig !== null) {
       const pig = guineaPigs.find(p => p.id === selectedPig);
@@ -217,7 +217,7 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
       }
       setSelectedPig(null);
     }
-    
+
     lastHandGrabRef.current = handPosition.isGrabbing;
   }, [handPosition, useHandTracking, guineaPigs, selectedPig, dragOffset, checkFruitCollision, onComplete]);
 
@@ -225,14 +225,14 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   const handleMouseDown = useCallback((pigId: number, e: React.MouseEvent | React.TouchEvent) => {
     if (useHandTracking) return;
     e.preventDefault();
-    
+
     const pig = guineaPigs.find(p => p.id === pigId);
     if (!pig || !containerRef.current) return;
-    
+
     const rect = containerRef.current.getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
+
     setSelectedPig(pigId);
     setDragOffset({ x: clientX - rect.left - pig.x, y: clientY - rect.top - pig.y });
     setDragPosition({ x: pig.x, y: pig.y });
@@ -240,23 +240,23 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
 
   const handleMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
     if (selectedPig === null || !containerRef.current) return;
-    
+
     const rect = containerRef.current.getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
+
     const newX = clientX - rect.left - dragOffset.x;
     const newY = clientY - rect.top - dragOffset.y;
-    
+
     setDragPosition({ x: newX, y: newY });
-    setGuineaPigs(prev => prev.map(pig => 
+    setGuineaPigs(prev => prev.map(pig =>
       pig.id === selectedPig ? { ...pig, x: newX, y: newY, vx: 0, vy: 0 } : pig
     ));
   }, [selectedPig, dragOffset]);
 
   const handleMouseUp = useCallback(() => {
     if (selectedPig === null) return;
-    
+
     const pig = guineaPigs.find(p => p.id === selectedPig);
     if (pig) {
       const nearFruit = checkFruitCollision(pig.x, pig.y);
@@ -275,7 +275,7 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
       window.addEventListener('mouseup', handleMouseUp);
       window.addEventListener('touchmove', handleMouseMove);
       window.addEventListener('touchend', handleMouseUp);
-      
+
       return () => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
@@ -286,7 +286,7 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   }, [useHandTracking, handleMouseMove, handleMouseUp]);
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative w-full h-[70vh] bg-gradient-to-b from-muted/30 to-muted/10 rounded-3xl overflow-hidden border border-border/50"
     >
@@ -296,11 +296,11 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
           key={fruit.id}
           className="absolute select-none"
           style={{ left: fruit.x, top: fruit.y }}
-          animate={{ 
+          animate={{
             scale: [1, 1.1, 1],
             rotate: [0, 5, -5, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 2 + Math.random(),
             repeat: Infinity,
             ease: 'easeInOut',
@@ -317,15 +317,17 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
         <motion.div
           key={pig.id}
           className={`absolute select-none ${useHandTracking ? '' : 'cursor-grab active:cursor-grabbing'}`}
-          style={{ 
-            left: pig.x, 
+          style={{
+            left: pig.x,
             top: pig.y,
             zIndex: selectedPig === pig.id ? 50 : 10,
+            width: '80px',
+            height: '80px',
           }}
           animate={selectedPig === pig.id ? {} : {
             rotate: [pig.vx > 0 ? 2 : -2, pig.vx > 0 ? -2 : 2],
           }}
-          transition={{ 
+          transition={{
             duration: 0.5,
             repeat: Infinity,
             repeatType: 'reverse',
@@ -336,7 +338,7 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
           <motion.img
             src={pig.image}
             alt={pig.name}
-            className="w-16 h-16 md:w-20 md:h-20 object-contain filter drop-shadow-md"
+            className="w-full h-full object-contain filter drop-shadow-md pointer-events-none"
             style={{ transform: pig.vx < 0 ? 'scaleX(-1)' : 'scaleX(1)' }}
             whileHover={!useHandTracking ? { scale: 1.1 } : {}}
             animate={selectedPig === pig.id ? { scale: 1.15 } : {}}
@@ -409,8 +411,8 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
       {/* Instructions overlay */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-card/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-soft">
         <p className="text-sm text-muted-foreground">
-          {useHandTracking 
-            ? '👋 Grab a guinea pig and drop it on any food!' 
+          {useHandTracking
+            ? '👋 Grab a guinea pig and drop it on any food!'
             : '👆 Drag a guinea pig to any food to enter!'}
         </p>
       </div>

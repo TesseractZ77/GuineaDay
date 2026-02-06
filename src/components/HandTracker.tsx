@@ -31,7 +31,7 @@ const HandTracker = ({ onHandMove, enabled }: HandTrackerProps) => {
 
   const isGrabbing = useCallback((landmarks: any[]): boolean => {
     if (!landmarks || landmarks.length < 21) return false;
-    
+
     // Check if fingers are curled (grabbing gesture)
     // Compare fingertip y position with finger base
     const thumbTip = landmarks[4];
@@ -39,18 +39,18 @@ const HandTracker = ({ onHandMove, enabled }: HandTrackerProps) => {
     const middleTip = landmarks[12];
     const ringTip = landmarks[16];
     const pinkyTip = landmarks[20];
-    
+
     const indexBase = landmarks[5];
     const middleBase = landmarks[9];
     const ringBase = landmarks[13];
     const pinkyBase = landmarks[17];
-    
+
     // If fingertips are below (higher y value) their bases, fingers are curled
     const indexCurled = indexTip.y > indexBase.y - 0.05;
     const middleCurled = middleTip.y > middleBase.y - 0.05;
     const ringCurled = ringTip.y > ringBase.y - 0.05;
     const pinkyCurled = pinkyTip.y > pinkyBase.y - 0.05;
-    
+
     // At least 3 fingers should be curled for a grab
     const curledCount = [indexCurled, middleCurled, ringCurled, pinkyCurled].filter(Boolean).length;
     return curledCount >= 2;
@@ -117,18 +117,18 @@ const HandTracker = ({ onHandMove, enabled }: HandTrackerProps) => {
 
           const canvas = canvasRef.current;
           const ctx = canvas?.getContext('2d');
-          
+
           if (canvas && ctx && videoRef.current) {
             canvas.width = videoRef.current.videoWidth;
             canvas.height = videoRef.current.videoHeight;
-            
+
             ctx.save();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-            
+
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
               const landmarks = results.multiHandLandmarks[0];
-              
+
               // Draw hand landmarks
               if (window.drawConnectors && window.HAND_CONNECTIONS) {
                 window.drawConnectors(ctx, landmarks, window.HAND_CONNECTIONS, {
@@ -143,15 +143,15 @@ const HandTracker = ({ onHandMove, enabled }: HandTrackerProps) => {
                   radius: 3
                 });
               }
-              
+
               // Get palm center (average of wrist and middle finger base)
               const palmX = (landmarks[0].x + landmarks[9].x) / 2;
               const palmY = (landmarks[0].y + landmarks[9].y) / 2;
-              
+
               // Convert to screen coordinates (mirror x for natural interaction)
               const screenX = (1 - palmX) * window.innerWidth;
               const screenY = palmY * window.innerHeight;
-              
+
               onHandMove({
                 x: screenX,
                 y: screenY,
@@ -160,7 +160,7 @@ const HandTracker = ({ onHandMove, enabled }: HandTrackerProps) => {
             } else {
               onHandMove(null);
             }
-            
+
             ctx.restore();
           }
         });
@@ -179,7 +179,7 @@ const HandTracker = ({ onHandMove, enabled }: HandTrackerProps) => {
 
         cameraRef.current = camera;
         await camera.start();
-        
+
         if (mounted) {
           setIsLoading(false);
         }
@@ -208,29 +208,30 @@ const HandTracker = ({ onHandMove, enabled }: HandTrackerProps) => {
   if (!enabled) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className="relative rounded-2xl overflow-hidden shadow-float border-2 border-primary/30 bg-card">
+    <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+      {/* Container is now invisible but processing happens */}
+      <div className="relative">
         <video
           ref={videoRef}
           className="hidden"
           playsInline
+          muted
         />
+        {/* Hide canvas so user doesn't see their face */}
         <canvas
           ref={canvasRef}
-          className="w-48 h-36 object-cover"
-          style={{ transform: 'scaleX(-1)' }}
+          className="hidden"
         />
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-card/90">
-            <div className="text-center">
-              <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">启动摄像头...</p>
-            </div>
+
+        {/* Only show loading/error states if really needed, but maybe unobtrusively */}
+        {isLoading && enabled && (
+          <div className="absolute bottom-0 right-0 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-muted-foreground shadow-sm">
+            Starting camera...
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-card/90 p-2">
-            <p className="text-xs text-destructive text-center">{error}</p>
+          <div className="absolute bottom-0 right-0 bg-destructive/80 text-destructive-foreground px-3 py-1 rounded-full text-xs shadow-sm">
+            {error}
           </div>
         )}
       </div>
