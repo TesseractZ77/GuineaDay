@@ -20,6 +20,12 @@ Keep track of your pet care routines or personal to-dos.
 - **Track Progress**: Mark tasks as done and keep your day productive.
 - **Simple UI**: Clean, distraction-free interface.
 
+### 📷 Photo Gallery
+A dedicated space to cherish your memories.
+- **Upload & Tag**: Upload photos and tag your guinea pigs.
+- **Filter**: Easily find photos of specific pigs.
+- **Organize**: Keep your pet photos sorted and accessible.
+
 ### 🌤️ Smart Dashboard
 - **Date & Weather**: Live weather updates for your location (powered by Open-Meteo).
 - **Navigation**: Easy access to the Game, Tasks, and Photo Gallery.

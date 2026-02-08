@@ -241,6 +241,11 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   const handleMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
     if (selectedPig === null || !containerRef.current) return;
 
+    // Prevent scrolling while dragging
+    if ('touches' in e) {
+      e.preventDefault();
+    }
+
     const rect = containerRef.current.getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -273,13 +278,14 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
     if (!useHandTracking) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleMouseMove);
+      // Use non-passive listener to allow preventDefault
+      window.addEventListener('touchmove', handleMouseMove, { passive: false });
       window.addEventListener('touchend', handleMouseUp);
 
       return () => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('touchmove', handleMouseMove);
+        window.removeEventListener('touchmove', handleMouseMove); // cleanup should match
         window.removeEventListener('touchend', handleMouseUp);
       };
     }
@@ -288,7 +294,7 @@ const FlyingGuineaPigGame = ({ onComplete, handPosition, useHandTracking }: Flyi
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[70vh] bg-gradient-to-b from-muted/30 to-muted/10 rounded-3xl overflow-hidden border border-border/50"
+      className="relative w-full h-[70vh] bg-gradient-to-b from-muted/30 to-muted/10 rounded-3xl overflow-hidden border border-border/50 touch-none"
     >
       {/* Fruit targets */}
       {fruitPositions.map((fruit) => (
