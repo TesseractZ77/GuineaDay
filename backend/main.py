@@ -26,7 +26,13 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 # Configure CORS to allow requests from the frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://localhost:5173", "*"], # Adjust ports as needed
+    allow_origins=[
+        "http://localhost:8080", 
+        "http://localhost:5173", 
+        "https://guinea-day-frontend.onrender.com", 
+        "https://guineaday-official.onrender.com",
+        "*"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
