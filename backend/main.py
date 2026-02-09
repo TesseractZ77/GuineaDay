@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
@@ -6,10 +6,22 @@ import models
 from database import SessionLocal, engine
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
+import os
+import shutil
 
 models.Base.metadata.create_all(bind=engine)
 
+from fastapi.staticfiles import StaticFiles
+import os
+import shutil
+
+# ... existing code ...
+
 app = FastAPI()
+
+# Mount uploads directory
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Configure CORS to allow requests from the frontend
 app.add_middleware(
@@ -219,5 +231,154 @@ def delete_photo(photo_id: int, db: Session = Depends(get_db)):
         os.remove(file_path)
     
     db.delete(photo)
+    db.commit()
+    return {"ok": True}
+
+# --- Profile Management ---
+
+# Pydantic Models for Profile
+class GuineaPigBase(BaseModel):
+    name: str
+    birth_date: Optional[datetime.datetime] = None
+    gender: Optional[str] = None
+    breed: Optional[str] = None
+    color: Optional[str] = None
+    adoption_date: Optional[datetime.datetime] = None
+    personality_notes: Optional[str] = None
+    food_preferences: Optional[str] = None
+    is_archived: bool = False
+    photo_url: Optional[str] = None
+
+class GuineaPigCreate(GuineaPigBase):
+    pass
+
+class GuineaPig(GuineaPigBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+class WeightLogBase(BaseModel):
+    weight_grams: int
+    notes: Optional[str] = None
+    date: Optional[datetime.datetime] = None
+
+class WeightLogCreate(WeightLogBase):
+    pass
+
+class WeightLog(WeightLogBase):
+    id: int
+    guinea_pig_id: int
+    date: datetime.datetime
+
+    class Config:
+        orm_mode = True
+
+# API Endpoints for Profiles
+
+@app.post("/guineapigs/", response_model=GuineaPig)
+def create_guinea_pig(pig: GuineaPigCreate, db: Session = Depends(get_db)):
+    try:
+        print(f"Creating pig with data: {pig.dict()}")
+        db_pig = models.GuineaPig(**pig.dict())
+        db.add(db_pig)
+        db.commit()
+        db.refresh(db_pig)
+        return db_pig
+    except Exception as e:
+        print(f"Error creating pig: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/guineapigs/", response_model=List[GuineaPig])
+def read_guinea_pigs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    pigs = db.query(models.GuineaPig).filter(models.GuineaPig.is_archived == False).offset(skip).limit(limit).all()
+    return pigs
+
+@app.get("/guineapigs/{pig_id}", response_model=GuineaPig)
+def read_guinea_pig(pig_id: int, db: Session = Depends(get_db)):
+    pig = db.query(models.GuineaPig).filter(models.GuineaPig.id == pig_id).first()
+    if pig is None:
+        raise HTTPException(status_code=404, detail="Guinea Pig not found")
+    return pig
+
+@app.put("/guineapigs/{pig_id}", response_model=GuineaPig)
+def update_guinea_pig(pig_id: int, pig: GuineaPigCreate, db: Session = Depends(get_db)):
+    db_pig = db.query(models.GuineaPig).filter(models.GuineaPig.id == pig_id).first()
+    if db_pig is None:
+        raise HTTPException(status_code=404, detail="Guinea Pig not found")
+    
+    for key, value in pig.dict().items():
+        setattr(db_pig, key, value)
+    
+    db.commit()
+    db.refresh(db_pig)
+    return db_pig
+
+@app.delete("/guineapigs/{pig_id}")
+def delete_guinea_pig(pig_id: int, db: Session = Depends(get_db)):
+    # Soft delete by archiving
+    db_pig = db.query(models.GuineaPig).filter(models.GuineaPig.id == pig_id).first()
+    if db_pig is None:
+        raise HTTPException(status_code=404, detail="Guinea Pig not found")
+    
+    db_pig.is_archived = True
+    db.commit()
+    return {"ok": True}
+
+# API Endpoints for Weight Logs
+
+@app.post("/guineapigs/{pig_id}/weights", response_model=WeightLog)
+def create_weight_log(pig_id: int, weight: WeightLogCreate, db: Session = Depends(get_db)):
+    # Verify pig exists
+    pig = db.query(models.GuineaPig).filter(models.GuineaPig.id == pig_id).first()
+    if not pig:
+        raise HTTPException(status_code=404, detail="Guinea Pig not found")
+
+    weight_data = weight.dict()
+    if weight_data.get('date') is None:
+        weight_data['date'] = datetime.datetime.utcnow()
+        
+    db_weight = models.WeightLog(**weight_data, guinea_pig_id=pig_id)
+    db.add(db_weight)
+    db.commit()
+    db.refresh(db_weight)
+    return db_weight
+
+@app.get("/guineapigs/{pig_id}/weights", response_model=List[WeightLog])
+def read_weight_logs(pig_id: int, db: Session = Depends(get_db)):
+    weights = db.query(models.WeightLog).filter(models.WeightLog.guinea_pig_id == pig_id).order_by(models.WeightLog.date.desc()).all()
+    return weights
+
+@app.post("/guineapigs/{pig_id}/photo", response_model=GuineaPig)
+async def upload_pig_photo(
+    pig_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    pig = db.query(models.GuineaPig).filter(models.GuineaPig.id == pig_id).first()
+    if not pig:
+        raise HTTPException(status_code=404, detail="Guinea Pig not found")
+    
+    # Save file with a unique name
+    filename = f"pig_{pig_id}_{int(datetime.datetime.now().timestamp())}_{file.filename}"
+    file_location = f"uploads/{filename}"
+    
+    with open(file_location, "wb+") as file_object:
+        shutil.copyfileobj(file.file, file_object)
+    
+    # Update pig profile with photo URL
+    pig.photo_url = f"uploads/{filename}"
+    db.commit()
+    db.refresh(pig)
+    return pig
+
+@app.delete("/weights/{weight_id}")
+def delete_weight_log(weight_id: int, db: Session = Depends(get_db)):
+    weight = db.query(models.WeightLog).filter(models.WeightLog.id == weight_id).first()
+    if not weight:
+        raise HTTPException(status_code=404, detail="Weight log not found")
+    
+    db.delete(weight)
     db.commit()
     return {"ok": True}

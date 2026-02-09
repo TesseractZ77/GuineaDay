@@ -149,6 +149,13 @@ const Index = () => {
           >
             <Button
               variant="outline"
+              onClick={() => window.location.href = '/profiles'}
+              className="px-6 py-4 rounded-xl border-2 hover:bg-accent/10"
+            >
+              🐹 My Piggies
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => window.location.href = '/tasks'}
               className="px-6 py-4 rounded-xl border-2 hover:bg-accent/10"
             >

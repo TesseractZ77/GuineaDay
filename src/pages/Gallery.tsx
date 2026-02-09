@@ -35,6 +35,7 @@ const Gallery = () => {
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [uploadCaption, setUploadCaption] = useState('');
     const [uploadTags, setUploadTags] = useState<string[]>([]);
+    const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
     useEffect(() => {
         fetchPhotos();
@@ -238,6 +239,7 @@ const Gallery = () => {
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer"
+                                        onClick={() => setSelectedPhoto(photo)}
                                     >
                                         <img
                                             src={`${API_URL}/uploads/${photo.filename}`}
@@ -276,6 +278,36 @@ const Gallery = () => {
 
                 </div>
             </div>
+
+            {/* Lightbox / Enlarged View */}
+            {selectedPhoto && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 cursor-pointer"
+                    onClick={() => setSelectedPhoto(null)}
+                >
+                    <div className="relative max-w-4xl w-full max-h-screen flex flex-col items-center">
+                        <img
+                            src={`${API_URL}/uploads/${selectedPhoto.filename}`}
+                            alt={selectedPhoto.caption || 'Enlarged photo'}
+                            className="w-full h-auto max-h-[85vh] object-contain rounded-md"
+                        />
+                        {selectedPhoto.caption && (
+                            <p className="text-white text-center mt-4 text-lg font-medium">
+                                {selectedPhoto.caption}
+                            </p>
+                        )}
+                        <button
+                            className="absolute top-4 right-4 text-white hover:text-gray-300 bg-black/50 rounded-full p-2 h-10 w-10 flex items-center justify-center"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedPhoto(null);
+                            }}
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

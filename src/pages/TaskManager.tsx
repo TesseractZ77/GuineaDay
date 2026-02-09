@@ -42,6 +42,7 @@ const categories = [
 const TaskManager = () => {
     const navigate = useNavigate();
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [profiles, setProfiles] = useState<{ id: number; name: string }[]>([]); // New state for profiles
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [selectedPig, setSelectedPig] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState('general');
@@ -49,7 +50,20 @@ const TaskManager = () => {
 
     useEffect(() => {
         fetchTasks();
+        fetchProfiles(); // Fetch profiles on mount
     }, []);
+
+    const fetchProfiles = async () => {
+        try {
+            const res = await fetch(`${API_URL}/guineapigs/`);
+            if (res.ok) {
+                const data = await res.json();
+                setProfiles(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch profiles:", error);
+        }
+    };
 
     const fetchTasks = async () => {
         try {
@@ -78,7 +92,7 @@ const TaskManager = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title: newTaskTitle,
-                    assignee_id: selectedPig,
+                    assignee_id: selectedPig, // This will now use the selected profile ID (as string)
                     category: selectedCategory,
                     priority: 'medium',
                 }),
@@ -86,6 +100,7 @@ const TaskManager = () => {
             const newTask = await response.json();
             setTasks([newTask, ...tasks]);
             setNewTaskTitle('');
+            setSelectedPig(null); // Reset selection
         } catch (error) {
             console.error('Error adding task:', error);
         }
@@ -97,10 +112,9 @@ const TaskManager = () => {
             setTasks(tasks.map(t => t.id === task.id ? { ...t, is_completed: !t.is_completed } : t));
 
             const endpoint = task.is_completed
-                ? `${API_URL}/tasks/${task.id}` // Revert complete (needs update endpoint logic, but for now assuming completed is one-way or update full object) 
+                ? `${API_URL}/tasks/${task.id}`
                 : `${API_URL}/tasks/${task.id}/complete`;
 
-            // If reverting completion, we need to use the PUT /tasks/{id} endpoint manually
             if (task.is_completed) {
                 await fetch(`${API_URL}/tasks/${task.id}`, {
                     method: 'PUT',
@@ -111,10 +125,10 @@ const TaskManager = () => {
                 await fetch(endpoint, { method: 'PUT' });
             }
 
-            fetchTasks(); // Refresh to ensure sync
+            fetchTasks();
         } catch (error) {
             console.error('Error updating task:', error);
-            fetchTasks(); // Revert on error
+            fetchTasks();
         }
     };
 
@@ -164,7 +178,35 @@ const TaskManager = () => {
                             </div>
 
 
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-col gap-4">
+                                {/* Assignee Selection */}
+                                <div className="flex gap-2 items-center overflow-x-auto pb-2">
+                                    <span className="text-sm font-medium mr-2 text-muted-foreground">For:</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedPig(null)}
+                                        className={`text-xs px-3 py-1 rounded-full border transition-colors ${selectedPig === null
+                                            ? 'bg-primary text-primary-foreground border-primary'
+                                            : 'bg-background hover:bg-muted'
+                                            }`}
+                                    >
+                                        Anyone
+                                    </button>
+                                    {profiles.map(pig => (
+                                        <button
+                                            key={pig.id}
+                                            type="button"
+                                            onClick={() => setSelectedPig(pig.id.toString())}
+                                            className={`text-xs px-3 py-1 rounded-full border transition-colors ${selectedPig === pig.id.toString()
+                                                ? 'bg-primary text-primary-foreground border-primary'
+                                                : 'bg-background hover:bg-muted'
+                                                }`}
+                                        >
+                                            🐹 {pig.name}
+                                        </button>
+                                    ))}
+                                </div>
+
                                 {/* Category Selection */}
                                 <div className="flex gap-2 items-center overflow-x-auto pb-2">
                                     <span className="text-sm font-medium mr-2 text-muted-foreground">Category:</span>
@@ -217,10 +259,16 @@ const TaskManager = () => {
                                             <h3 className={`font-medium truncate ${task.is_completed ? 'line-through text-muted-foreground' : ''}`}>
                                                 {task.title}
                                             </h3>
-                                            <div className="flex gap-2 mt-1 flex-wrap">
+                                            <div className="flex gap-2 mt-1 flex-wrap items-center">
                                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
                                                     {categories.find(c => c.id === task.category)?.emoji} {categories.find(c => c.id === task.category)?.name}
                                                 </span>
+                                                {task.assignee_id && (
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
+                                                        <span>🐹</span>
+                                                        {profiles.find(p => p.id.toString() === task.assignee_id)?.name || 'Unknown Piggy'}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
 
