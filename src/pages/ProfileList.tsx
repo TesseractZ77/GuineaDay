@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { AddPigDialog } from '@/components/AddPigDialog';
-import { ArrowLeft, Ruler, Heart } from 'lucide-react';
+import { ArrowLeft, Ruler, Heart, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { API_URL } from '@/config';
@@ -33,6 +33,24 @@ const ProfileList = () => {
             }
         } catch (error) {
             console.error("Failed to fetch profiles:", error);
+        }
+    };
+
+    const deletePig = async (id: number) => {
+        if (!confirm("Are you sure you want to delete this profile? This cannot be undone.")) return;
+
+        try {
+            const res = await fetch(`${API_URL}/guineapigs/${id}`, {
+                method: 'DELETE',
+            });
+            if (res.ok) {
+                setPigs(pigs.filter(p => p.id !== id));
+            } else {
+                alert("Failed to delete profile");
+            }
+        } catch (error) {
+            console.error("Error deleting pig:", error);
+            alert("Error deleting profile");
         }
     };
 
@@ -67,9 +85,20 @@ const ProfileList = () => {
                             <motion.div
                                 key={pig.id}
                                 whileHover={{ y: -5 }}
-                                className={`rounded-xl overflow-hidden border border-border/50 shadow-sm bg-card cursor-pointer hover:shadow-md transition-all`}
+                                className={`group relative rounded-xl overflow-hidden border border-border/50 shadow-sm bg-card cursor-pointer hover:shadow-md transition-all`}
                                 onClick={() => navigate(`/profiles/${pig.id}`)}
                             >
+                                <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deletePig(pig.id);
+                                    }}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
                                 <div className={`h-32 ${pig.color || 'bg-secondary'} flex items-center justify-center relative overflow-hidden`}>
                                     {pig.photo_url ? (
                                         <img

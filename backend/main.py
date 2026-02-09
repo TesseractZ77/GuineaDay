@@ -329,6 +329,13 @@ def delete_guinea_pig(pig_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Guinea Pig not found")
     
     db_pig.is_archived = True
+    
+    # Unassign tasks associated with this pig
+    # Note: assignee_id is stored as string in Task model
+    tasks = db.query(models.Task).filter(models.Task.assignee_id == str(pig_id)).all()
+    for task in tasks:
+        task.assignee_id = None
+        
     db.commit()
     return {"ok": True}
 
