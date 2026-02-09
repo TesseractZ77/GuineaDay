@@ -19,7 +19,7 @@ interface Task {
     notes: string | null;
 }
 
-const API_URL = 'http://localhost:8000';
+import { API_URL } from '@/config';
 
 const guineaPigs = [
     { id: 'hachi', name: 'Hachi', color: 'bg-orange-100 text-orange-800' },

@@ -9,6 +9,8 @@ interface AddPigDialogProps {
     onPigAdded: () => void;
 }
 
+import { API_URL } from "@/config";
+
 export function AddPigDialog({ onPigAdded }: AddPigDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
@@ -18,13 +20,14 @@ export function AddPigDialog({ onPigAdded }: AddPigDialogProps) {
     const [birthDate, setBirthDate] = useState("");
     const [loading, setLoading] = useState(false);
 
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
 
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:8000/guineapigs/", {
+            const res = await fetch(`${API_URL}/guineapigs/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, breed, gender, color, birth_date: birthDate || null }),

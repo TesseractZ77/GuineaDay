@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Upload, Image as ImageIcon, Plus, Trash } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://localhost:8000';
+import { API_URL } from '@/config';
 
 interface Photo {
     id: number;

@@ -5,7 +5,7 @@ import { AddPigDialog } from '@/components/AddPigDialog';
 import { ArrowLeft, Ruler, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://localhost:8000';
+import { API_URL } from '@/config';
 
 interface GuineaPig {
     id: number;

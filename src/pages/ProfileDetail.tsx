@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Scale, Ruler, Heart, Utensils, Calendar, Trash2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const API_URL = 'http://localhost:8000';
+import { API_URL } from '@/config';
 
 interface GuineaPig {
     id: number;
