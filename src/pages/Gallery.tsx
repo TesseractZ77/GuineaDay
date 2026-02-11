@@ -15,19 +15,10 @@ interface Photo {
     created_at: string;
 }
 
-const guineaPigs = [
-    { id: 'hachi', name: 'Hachi', color: 'bg-orange-100 text-orange-800' },
-    { id: 'kui', name: 'Kui', color: 'bg-yellow-100 text-yellow-800' },
-    { id: 'nova', name: 'Nova', color: 'bg-gray-100 text-gray-800' },
-    { id: 'elmo', name: 'Elmo', color: 'bg-red-100 text-red-800' },
-    { id: 'mel', name: 'Mel', color: 'bg-amber-100 text-amber-800' },
-    { id: 'haru', name: 'Haru', color: 'bg-stone-100 text-stone-800' },
-    { id: 'seven', name: 'Seven', color: 'bg-lime-100 text-lime-800' },
-];
-
 const Gallery = () => {
     const navigate = useNavigate();
     const [photos, setPhotos] = useState<Photo[]>([]);
+    const [pigs, setPigs] = useState<{ id: number; name: string; color?: string }[]>([]);
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
@@ -39,7 +30,20 @@ const Gallery = () => {
 
     useEffect(() => {
         fetchPhotos();
+        fetchPigs();
     }, [selectedTag]);
+
+    const fetchPigs = async () => {
+        try {
+            const res = await fetch(`${API_URL}/guineapigs/`);
+            if (res.ok) {
+                const data = await res.json();
+                setPigs(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch pigs:", error);
+        }
+    };
 
     const fetchPhotos = async () => {
         try {
@@ -63,11 +67,11 @@ const Gallery = () => {
         }
     };
 
-    const toggleUploadTag = (pigId: string) => {
-        if (uploadTags.includes(pigId)) {
-            setUploadTags(uploadTags.filter(id => id !== pigId));
+    const toggleUploadTag = (pigName: string) => {
+        if (uploadTags.includes(pigName)) {
+            setUploadTags(uploadTags.filter(t => t !== pigName));
         } else {
-            setUploadTags([...uploadTags, pigId]);
+            setUploadTags([...uploadTags, pigName]);
         }
     };
 
@@ -171,12 +175,12 @@ const Gallery = () => {
                             <div>
                                 <label className="text-xs font-medium text-muted-foreground mb-2 block">Tag Guinea Pigs:</label>
                                 <div className="flex flex-wrap gap-2">
-                                    {guineaPigs.map(pig => (
+                                    {pigs.map(pig => (
                                         <button
                                             key={pig.id}
-                                            onClick={() => toggleUploadTag(pig.id)}
-                                            className={`text-[10px] px-2 py-1 rounded-full border transition-all ${uploadTags.includes(pig.id)
-                                                ? pig.color + ' border-transparent ring-1 ring-offset-1 ring-primary'
+                                            onClick={() => toggleUploadTag(pig.name)}
+                                            className={`text-[10px] px-2 py-1 rounded-full border transition-all ${uploadTags.includes(pig.name)
+                                                ? (pig.color || 'bg-primary/20') + ' border-transparent ring-1 ring-offset-1 ring-primary'
                                                 : 'bg-background border-border text-muted-foreground hover:border-primary/50'
                                                 }`}
                                         >
@@ -201,20 +205,20 @@ const Gallery = () => {
                             <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={() => setSelectedTag(null)}
-                                    className={`text-xs px-3 py-1.5 rounded-md transition-colors ${selectedTag === null
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedTag === null
+                                        ? 'bg-primary text-primary-foreground border-primary'
+                                        : 'bg-background border-border hover:bg-muted'
                                         }`}
                                 >
                                     All
                                 </button>
-                                {guineaPigs.map(pig => (
+                                {pigs.map(pig => (
                                     <button
                                         key={pig.id}
-                                        onClick={() => setSelectedTag(pig.id === selectedTag ? null : pig.id)}
-                                        className={`text-xs px-3 py-1.5 rounded-md transition-colors ${selectedTag === pig.id
-                                            ? pig.color + ' ring-1 ring-primary' // Active style
-                                            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                                        onClick={() => setSelectedTag(pig.name)}
+                                        className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedTag === pig.name
+                                            ? (pig.color || 'bg-primary/20') + ' border-transparent ring-1 ring-primary'
+                                            : 'bg-background border-border hover:bg-muted'
                                             }`}
                                     >
                                         {pig.name}
@@ -264,7 +268,7 @@ const Gallery = () => {
                                                 <div className="flex gap-1 mt-1 flex-wrap">
                                                     {photo.guinea_pig_tags.split(',').map(tag => (
                                                         <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
-                                                            {guineaPigs.find(p => p.id === tag)?.name || tag}
+                                                            {pigs.find(p => p.name === tag || p.id.toString() === tag)?.name || tag}
                                                         </span>
                                                     ))}
                                                 </div>
